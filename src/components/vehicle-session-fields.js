@@ -14,12 +14,14 @@ export function VehicleSessionFields({
   return (
     <>
       {includePlateNumber ? (
-        <FormField label="Plate number">
+        <FormField label="Plate number" hint="Max 7 characters. No spaces.">
           <input
             type="text"
             name="plate_number"
-            placeholder="UBA 123A"
+            placeholder="UBA123A"
             required
+            maxLength={7}
+            pattern="[A-Za-z0-9]{1,7}"
             defaultValue={defaults.plate_number ?? ""}
             className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-sm uppercase outline-none focus:border-accent"
           />

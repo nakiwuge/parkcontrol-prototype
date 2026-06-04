@@ -17,6 +17,26 @@ function toText(value) {
   return String(value ?? "").trim();
 }
 
+function normalizePlateNumber(value) {
+  return toText(value).toUpperCase().replace(/\s+/g, "");
+}
+
+function getPlateNumberErrorMessage(plateNumber) {
+  if (!plateNumber) {
+    return "Plate number is required.";
+  }
+
+  if (plateNumber.length > 7) {
+    return "Plate number must not exceed 7 characters.";
+  }
+
+  if (!/^[A-Z0-9]+$/.test(plateNumber)) {
+    return "Plate number must use only letters and numbers with no spaces.";
+  }
+
+  return null;
+}
+
 function revalidateAll(sessionId) {
   revalidatePath("/");
   revalidatePath("/staff");
@@ -54,15 +74,17 @@ export async function createVehicleEntryAction(formData) {
   const client = requireSupabaseServerClient();
   const site = await ensureDefaultParkingSite(client);
 
-  const plateNumber = toText(formData.get("plate_number")).toUpperCase();
+  const plateNumber = normalizePlateNumber(formData.get("plate_number"));
   const customerPhone = toText(formData.get("customer_phone"));
   const carType = toText(formData.get("car_type")) || "Saloon";
   const keyStatus = toText(formData.get("key_status")) || "Key taken";
   const rateType = toText(formData.get("rate_type")) || "Hourly";
   const notes = toText(formData.get("notes"));
 
-  if (!plateNumber) {
-    redirect(buildRedirect("/staff/entry", "error", "Plate number is required."));
+  const plateNumberError = getPlateNumberErrorMessage(plateNumber);
+
+  if (plateNumberError) {
+    redirect(buildRedirect("/staff/entry", "error", plateNumberError));
   }
 
   const receiptNumber = await getNextReceiptNumber(client);
@@ -114,8 +136,9 @@ export async function simulateCameraCaptureAction() {
   const site = await ensureDefaultParkingSite(client);
 
   const receiptNumber = await getNextReceiptNumber(client);
-  const plateNumber =
-    CAMERA_PLATES[Math.floor(Math.random() * CAMERA_PLATES.length)];
+  const plateNumber = normalizePlateNumber(
+    CAMERA_PLATES[Math.floor(Math.random() * CAMERA_PLATES.length)],
+  );
   const entryTime = new Date().toISOString();
 
   const { data: session, error } = await client
@@ -224,19 +247,21 @@ export async function updateCameraVehicleDetailsAction(formData) {
     redirect(buildRedirect("/staff", "error", "Vehicle session not found."));
   }
 
-  const plateNumber = toText(formData.get("plate_number")).toUpperCase();
+  const plateNumber = normalizePlateNumber(formData.get("plate_number"));
   const customerPhone = toText(formData.get("customer_phone"));
   const carType = toText(formData.get("car_type")) || session.car_type || "Saloon";
   const keyStatus = toText(formData.get("key_status")) || session.key_status || "Key taken";
   const rateType = toText(formData.get("rate_type")) || session.rate_type || "Hourly";
   const notes = toText(formData.get("notes"));
 
-  if (!plateNumber) {
+  const plateNumberError = getPlateNumberErrorMessage(plateNumber);
+
+  if (plateNumberError) {
     redirect(
       buildRedirect(
         `/vehicles/${sessionId}`,
         "error",
-        "Plate number is required before confirmation.",
+        plateNumberError,
       ),
     );
   }
