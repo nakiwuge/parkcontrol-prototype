@@ -49,6 +49,25 @@ create table if not exists activity_logs (
   created_at timestamp with time zone default now()
 );
 
+create table if not exists sales_waitlist (
+  id uuid primary key default gen_random_uuid(),
+  client_name text not null,
+  business_name text,
+  contact_phone text,
+  contact_email text,
+  location text,
+  parking_size text,
+  budget_range text,
+  package_interest text,
+  decision_timeline text,
+  follow_up_status text default 'New Lead',
+  next_follow_up_date date,
+  notes text,
+  creat to ed_by text,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
+);
+
 create or replace function set_updated_at()
 returns trigger
 language plpgsql
@@ -60,9 +79,15 @@ end;
 $$;
 
 drop trigger if exists vehicle_sessions_set_updated_at on vehicle_sessions;
+drop trigger if exists sales_waitlist_set_updated_at on sales_waitlist;
 
 create trigger vehicle_sessions_set_updated_at
 before update on vehicle_sessions
+for each row
+execute procedure set_updated_at();
+
+create trigger sales_waitlist_set_updated_at
+before update on sales_waitlist
 for each row
 execute procedure set_updated_at();
 
@@ -71,15 +96,19 @@ create index if not exists vehicle_sessions_entry_time_idx on vehicle_sessions(e
 create index if not exists vehicle_sessions_exit_time_idx on vehicle_sessions(exit_time desc);
 create index if not exists activity_logs_vehicle_session_idx on activity_logs(vehicle_session_id);
 create index if not exists activity_logs_created_at_idx on activity_logs(created_at desc);
+create index if not exists sales_waitlist_created_at_idx on sales_waitlist(created_at desc);
+create index if not exists sales_waitlist_status_idx on sales_waitlist(follow_up_status);
 
 alter table parking_sites disable row level security;
 alter table vehicle_sessions disable row level security;
 alter table activity_logs disable row level security;
+alter table sales_waitlist disable row level security;
 
 grant usage on schema public to anon, authenticated;
 grant select, insert, update, delete on parking_sites to anon, authenticated;
 grant select, insert, update, delete on vehicle_sessions to anon, authenticated;
 grant select, insert, update, delete on activity_logs to anon, authenticated;
+grant select, insert, update, delete on sales_waitlist to anon, authenticated;
 
 insert into parking_sites (name, location, hourly_rate, fixed_rate, lost_receipt_fine)
 values ('Rompact Demo Parking', 'Kampala', 2000, 5000, 10000)

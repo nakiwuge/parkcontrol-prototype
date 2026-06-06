@@ -1,11 +1,12 @@
 import { APP_TIME_ZONE } from "@/lib/constants";
 
 export function formatCurrencyUGX(amount = 0) {
-  return new Intl.NumberFormat("en-UG", {
-    style: "currency",
-    currency: "UGX",
+  const value = Number(amount) || 0;
+  const formatted = new Intl.NumberFormat("en-UG", {
     maximumFractionDigits: 0,
-  }).format(Number(amount) || 0);
+  }).format(value);
+
+  return `UGX ${formatted}`;
 }
 
 export function formatDateTime(value) {

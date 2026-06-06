@@ -1,4 +1,5 @@
 import { FormField } from "@/components/form-field";
+import { SelectInput } from "@/components/select-input";
 import {
   CAR_TYPES,
   KEY_STATUS_OPTIONS,
@@ -39,27 +40,19 @@ export function VehicleSessionFields({
       </FormField>
 
       <FormField label="Car type">
-        <select
+        <SelectInput
           name="car_type"
           defaultValue={defaults.car_type ?? "Saloon"}
-          className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-sm outline-none focus:border-accent"
-        >
-          {CAR_TYPES.map((option) => (
-            <option key={option}>{option}</option>
-          ))}
-        </select>
+          options={CAR_TYPES}
+        />
       </FormField>
 
       <FormField label="Key status">
-        <select
+        <SelectInput
           name="key_status"
           defaultValue={defaults.key_status ?? "Key taken"}
-          className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-sm outline-none focus:border-accent"
-        >
-          {KEY_STATUS_OPTIONS.map((option) => (
-            <option key={option}>{option}</option>
-          ))}
-        </select>
+          options={KEY_STATUS_OPTIONS}
+        />
       </FormField>
 
       <FormField
@@ -74,15 +67,11 @@ export function VehicleSessionFields({
             : undefined
         }
       >
-        <select
+        <SelectInput
           name="rate_type"
           defaultValue={defaults.rate_type ?? "Hourly"}
-          className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-sm outline-none focus:border-accent"
-        >
-          {RATE_TYPE_OPTIONS.map((option) => (
-            <option key={option}>{option}</option>
-          ))}
-        </select>
+          options={RATE_TYPE_OPTIONS}
+        />
       </FormField>
 
       <div className="lg:col-span-2">

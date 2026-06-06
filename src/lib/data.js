@@ -16,6 +16,30 @@ function sumBy(items, key) {
   return items.reduce((sum, item) => sum + (Number(item[key]) || 0), 0);
 }
 
+function normalizeReportDateKey(dateValue) {
+  const normalized = String(dateValue ?? "").trim();
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+    return normalized;
+  }
+
+  return getDateKey(new Date());
+}
+
+function isSessionInsideAtEndOfDate(session, reportDateKey) {
+  const entryDateKey = getDateKey(session.entry_time);
+
+  if (entryDateKey > reportDateKey) {
+    return false;
+  }
+
+  if (!session.exit_time) {
+    return true;
+  }
+
+  return getDateKey(session.exit_time) > reportDateKey;
+}
+
 export async function ensureDefaultParkingSite(client) {
   const { data: existingSite, error: existingError } = await client
     .from("parking_sites")
@@ -142,8 +166,12 @@ function mapSuspiciousItems(sessions, activityLogs) {
   );
 }
 
-function buildDashboardMetrics(site, sessions, activityLogs) {
+function buildDashboardMetrics(site, sessions, activityLogs, options = {}) {
   const todayKey = getDateKey(new Date());
+  const reportDateKey = normalizeReportDateKey(options.reportDate);
+  const reportDateValue = new Date(reportDateKey);
+  const completedDateKey = normalizeReportDateKey(options.completedDate);
+  const completedDateValue = new Date(completedDateKey);
   const activeSessions = sessions.filter((session) =>
     ["inside", "needs_confirmation"].includes(session.status),
   );
@@ -153,6 +181,29 @@ function buildDashboardMetrics(site, sessions, activityLogs) {
   const exitedToday = sessions.filter(
     (session) => session.exit_time && getDateKey(session.exit_time) === todayKey,
   );
+  const enteredOnReportDate = sessions.filter(
+    (session) => getDateKey(session.entry_time) === reportDateKey,
+  );
+  const exitedOnReportDate = sessions.filter(
+    (session) =>
+      session.exit_time && getDateKey(session.exit_time) === reportDateKey,
+  );
+  const exitedOnCompletedDate = sessions.filter(
+    (session) =>
+      session.exit_time && getDateKey(session.exit_time) === completedDateKey,
+  );
+  const paidOnReportDate = exitedOnReportDate.filter(
+    (session) => session.status === "paid",
+  );
+  const unpaidOnReportDate = exitedOnReportDate.filter(
+    (session) => session.status === "unpaid_exit",
+  );
+  const carsInsideOnReportDate =
+    reportDateKey === todayKey
+      ? activeSessions.length
+      : sessions.filter((session) =>
+          isSessionInsideAtEndOfDate(session, reportDateKey),
+        ).length;
   const paidToday = exitedToday.filter((session) => session.status === "paid");
   const unpaidToday = exitedToday.filter(
     (session) => session.status === "unpaid_exit",
@@ -165,26 +216,39 @@ function buildDashboardMetrics(site, sessions, activityLogs) {
     ),
     "amount_due",
   );
+  const expectedRevenueOnReportDate = sumBy(
+    exitedOnReportDate.filter((session) =>
+      ["paid", "unpaid_exit"].includes(session.status),
+    ),
+    "amount_due",
+  );
   const collectedRevenue = sumBy(paidToday, "amount_paid");
+  const collectedRevenueOnReportDate = sumBy(
+    paidOnReportDate,
+    "amount_paid",
+  );
   const unpaidAmount = sumBy(unpaidToday, "amount_due");
-  const lostReceiptFines = exitedToday.reduce(
+  const unpaidAmountOnReportDate = sumBy(unpaidOnReportDate, "amount_due");
+  const lostReceiptFines = exitedOnReportDate.reduce(
     (sum, session) => sum + (Number(session.lost_receipt_fine_amount) || 0),
     0,
   );
   const cashPayments = sumBy(
-    paidToday.filter((session) => session.payment_method === "Cash"),
+    paidOnReportDate.filter((session) => session.payment_method === "Cash"),
     "amount_paid",
   );
   const mobileMoneyPayments = sumBy(
-    paidToday.filter((session) => session.payment_method === "Mobile Money"),
+    paidOnReportDate.filter((session) => session.payment_method === "Mobile Money"),
     "amount_paid",
   );
 
   return {
     activeSessions,
-    completedPayments: exitedToday
+    completedPayments: exitedOnCompletedDate
       .slice()
       .sort((left, right) => new Date(right.exit_time) - new Date(left.exit_time)),
+    completedPaymentsDateKey: completedDateKey,
+    completedPaymentsDateLabel: formatDateOnly(completedDateValue),
     suspiciousItems,
     staffActivity: activityLogs,
     staff: {
@@ -203,17 +267,19 @@ function buildDashboardMetrics(site, sessions, activityLogs) {
       suspiciousItems: suspiciousItems.length,
     },
     report: {
-      dateLabel: formatDateOnly(new Date()),
-      totalCarsEntered: enteredToday.length,
-      totalCarsPaid: paidToday.length,
-      totalUnpaidExits: unpaidToday.length,
-      carsCurrentlyInside: activeSessions.length,
-      expectedRevenue,
-      collectedRevenue,
-      difference: expectedRevenue - collectedRevenue,
+      dateKey: reportDateKey,
+      dateLabel: formatDateOnly(reportDateValue),
+      totalCarsEntered: enteredOnReportDate.length,
+      totalCarsPaid: paidOnReportDate.length,
+      totalUnpaidExits: unpaidOnReportDate.length,
+      carsCurrentlyInside: carsInsideOnReportDate,
+      expectedRevenue: expectedRevenueOnReportDate,
+      collectedRevenue: collectedRevenueOnReportDate,
+      difference: expectedRevenueOnReportDate - collectedRevenueOnReportDate,
       lostReceiptFines,
       cashPayments,
       mobileMoneyPayments,
+      unpaidAmount: unpaidAmountOnReportDate,
     },
     site,
   };
@@ -225,6 +291,8 @@ function buildEmptySnapshot() {
     site: DEFAULT_PARKING_SITE,
     activeSessions: [],
     completedPayments: [],
+    completedPaymentsDateKey: getDateKey(new Date()),
+    completedPaymentsDateLabel: formatDateOnly(new Date()),
     suspiciousItems: [],
     staffActivity: [],
     staff: {
@@ -243,6 +311,7 @@ function buildEmptySnapshot() {
       suspiciousItems: 0,
     },
     report: {
+      dateKey: getDateKey(new Date()),
       dateLabel: formatDateOnly(new Date()),
       totalCarsEntered: 0,
       totalCarsPaid: 0,
@@ -254,11 +323,12 @@ function buildEmptySnapshot() {
       lostReceiptFines: 0,
       cashPayments: 0,
       mobileMoneyPayments: 0,
+      unpaidAmount: 0,
     },
   };
 }
 
-export async function getDashboardSnapshot() {
+export async function getDashboardSnapshot(options = {}) {
   noStore();
 
   if (!isSupabaseConfigured()) {
@@ -290,7 +360,12 @@ export async function getDashboardSnapshot() {
     throw new Error(logsError.message);
   }
 
-  const snapshot = buildDashboardMetrics(site, sessions ?? [], activityLogs ?? []);
+  const snapshot = buildDashboardMetrics(
+    site,
+    sessions ?? [],
+    activityLogs ?? [],
+    options,
+  );
 
   return {
     isConfigured: true,
@@ -358,6 +433,27 @@ export async function getVehicleSessionDetails(id) {
   };
 }
 
+export async function getWaitlistEntries() {
+  noStore();
+
+  if (!isSupabaseConfigured()) {
+    return [];
+  }
+
+  const client = getSupabaseServerClient();
+  const { data, error } = await client
+    .from("sales_waitlist")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ?? [];
+}
+
 export function buildSummaryRows(site, report) {
   return [
     { label: "Date", value: report.dateLabel },
@@ -373,6 +469,7 @@ export function buildSummaryRows(site, report) {
     { label: "Cars currently inside", value: String(report.carsCurrentlyInside) },
     { label: "Expected revenue", value: formatCurrencyUGX(report.expectedRevenue) },
     { label: "Collected revenue", value: formatCurrencyUGX(report.collectedRevenue) },
+    { label: "Unpaid amount", value: formatCurrencyUGX(report.unpaidAmount) },
     { label: "Cash payments", value: formatCurrencyUGX(report.cashPayments) },
     {
       label: "Mobile money payments",

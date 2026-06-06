@@ -1,12 +1,21 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { APP_NAME } from "@/lib/constants";
 import { BrandLogo } from "@/components/brand-logo";
 import { DashboardNav } from "@/components/dashboard-nav";
 
 export function AppShell({ children }) {
+  const pathname = usePathname();
+
+  if (pathname === "/") {
+    return <div className="min-h-screen bg-background">{children}</div>;
+  }
+
   return (
     <div className="min-h-screen bg-background lg:grid lg:grid-cols-[280px_minmax(0,1fr)]">
-      <aside className="print-hidden hidden border-r border-white/10 bg-foreground lg:flex lg:min-h-screen lg:flex-col">
+      <aside className="print-hidden hidden border-r border-white/10 bg-foreground lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:self-start">
         <div className="flex items-center gap-3 px-6 py-7">
           <BrandLogo inverted />
           <div className="min-w-0">
@@ -19,11 +28,11 @@ export function AppShell({ children }) {
           </div>
         </div>
 
-        <div className="px-4">
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-6">
           <DashboardNav />
         </div>
 
-        <div className="mt-auto px-6 py-6">
+        <div className="mt-auto border-t border-white/10 px-6 py-6">
           <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/46">
               Live Prototype
@@ -36,7 +45,7 @@ export function AppShell({ children }) {
       </aside>
 
       <div className="min-w-0">
-        <header className="print-hidden sticky top-0 z-40 border-b border-line/70 bg-white/90 backdrop-blur-xl lg:hidden">
+        <header className="print-hidden sticky top-0 z-40 border-b border-line bg-white/96 shadow-[0_8px_24px_rgba(31,41,55,0.06)] backdrop-blur-xl lg:hidden">
           <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6">
             <div className="flex items-center justify-between gap-4">
               <div className="min-w-0">

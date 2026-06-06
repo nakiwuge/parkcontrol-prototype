@@ -5,6 +5,7 @@ import { useState } from "react";
 import { checkoutVehicleAction } from "@/app/actions";
 import { formatCurrencyUGX, formatDateTime, formatDurationLabel } from "@/lib/format";
 import { calculateCharge, getEffectiveRateAmount } from "@/lib/parking";
+import { SelectInput } from "@/components/select-input";
 import { SubmitButton } from "@/components/submit-button";
 
 export function CheckoutForm({ session, site }) {
@@ -98,16 +99,12 @@ export function CheckoutForm({ session, site }) {
               <span className="text-sm font-semibold text-foreground">
                 Payment method
               </span>
-              <select
+              <SelectInput
                 name="payment_method"
                 value={paymentMethod}
                 onChange={(event) => setPaymentMethod(event.target.value)}
-                className="w-full rounded-2xl border border-line bg-white px-4 py-3 text-sm outline-none focus:border-accent"
-              >
-                <option>Cash</option>
-                <option>Mobile Money</option>
-                <option>Unpaid</option>
-              </select>
+                options={["Cash", "Mobile Money", "Unpaid"]}
+              />
             </label>
 
             <div className="rounded-[1.5rem] bg-foreground p-5 text-white">

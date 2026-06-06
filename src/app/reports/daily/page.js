@@ -15,7 +15,10 @@ import {
 
 export default async function DailyReportPage({ searchParams }) {
   const filters = await searchParams;
-  const dashboard = await getDashboardSnapshot();
+  const selectedDate = String(filters?.date ?? "").trim();
+  const dashboard = await getDashboardSnapshot({
+    reportDate: selectedDate,
+  });
   const plateQuery = normalizePlateQuery(filters?.plate);
   const filteredCompletedPayments = filterSessionsByPlate(
     dashboard.completedPayments,
@@ -37,7 +40,7 @@ export default async function DailyReportPage({ searchParams }) {
     },
     {
       label: "Unpaid amount",
-      value: formatCurrencyUGX(dashboard.owner.unpaidAmount),
+      value: formatCurrencyUGX(dashboard.report.unpaidAmount),
     },
   ];
 
@@ -61,7 +64,32 @@ export default async function DailyReportPage({ searchParams }) {
       <SectionCard
         title="Daily Summary"
         subtitle="Designed for quick printing and discussion with parking owners."
-        actions={<PrintReportButton />}
+        actions={
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+            <form action="/reports/daily" className="flex items-center gap-2">
+              {plateQuery ? (
+                <input type="hidden" name="plate" value={plateQuery} />
+              ) : null}
+              <label htmlFor="report-date" className="sr-only">
+                Filter report by day
+              </label>
+              <input
+                id="report-date"
+                type="date"
+                name="date"
+                defaultValue={dashboard.report.dateKey}
+                className="min-w-0 flex-1 rounded-2xl border border-line bg-white px-4 py-2.5 text-sm text-foreground outline-none focus:border-accent sm:flex-none"
+              />
+              <button
+                type="submit"
+                className="shrink-0 rounded-2xl bg-foreground px-4 py-2.5 text-sm font-semibold text-white hover:bg-foreground/90"
+              >
+                Apply Day
+              </button>
+            </form>
+            <PrintReportButton className="w-full sm:w-auto" />
+          </div>
+        }
       >
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
           <div className="overflow-hidden rounded-[1.25rem] border border-line">
@@ -138,6 +166,7 @@ export default async function DailyReportPage({ searchParams }) {
           <PlateSearchForm
             action="/reports/daily"
             defaultValue={plateQuery}
+            hiddenFields={{ date: dashboard.report.dateKey }}
             summary="Search completed sessions by number plate."
           />
         </div>

@@ -21,7 +21,10 @@ import {
 
 export default async function OwnerDashboardPage({ searchParams }) {
   const filters = await searchParams;
-  const dashboard = await getDashboardSnapshot();
+  const selectedCompletedDate = String(filters?.completed_date ?? "").trim();
+  const dashboard = await getDashboardSnapshot({
+    completedDate: selectedCompletedDate,
+  });
   const plateQuery = normalizePlateQuery(filters?.plate);
   const filteredActiveSessions = filterSessionsByPlate(
     dashboard.activeSessions,
@@ -60,7 +63,7 @@ export default async function OwnerDashboardPage({ searchParams }) {
 
       {!dashboard.isConfigured ? <SetupNotice /> : null}
 
-      <section className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
         <MetricCard
           label="Cars Entered Today"
           value={dashboard.owner.carsEnteredToday}
@@ -77,11 +80,6 @@ export default async function OwnerDashboardPage({ searchParams }) {
           accent="muted"
         />
         <MetricCard
-          label="Suspicious Items"
-          value={dashboard.owner.suspiciousItems}
-          accent="accent"
-        />
-        <MetricCard
           label="Expected Revenue"
           value={formatCurrencyUGX(dashboard.owner.expectedRevenue)}
           accent="accent"
@@ -90,11 +88,6 @@ export default async function OwnerDashboardPage({ searchParams }) {
           label="Collected Revenue"
           value={formatCurrencyUGX(dashboard.owner.collectedRevenue)}
           accent="dark"
-        />
-        <MetricCard
-          label="Unpaid Amount"
-          value={formatCurrencyUGX(dashboard.owner.unpaidAmount)}
-          accent="accent"
         />
         <MetricCard
           label="Current Hourly Rate"
@@ -127,6 +120,7 @@ export default async function OwnerDashboardPage({ searchParams }) {
           <PlateSearchForm
             action="/owner"
             defaultValue={plateQuery}
+            hiddenFields={{ completed_date: dashboard.completedPaymentsDateKey }}
             summary="Search active and completed owner tables by number plate."
           />
         </div>
@@ -168,12 +162,37 @@ export default async function OwnerDashboardPage({ searchParams }) {
 
       <SectionCard
         title="Completed Payments"
-        subtitle="Today’s paid and unpaid completed sessions."
+        subtitle={`Paid and unpaid completed sessions for ${dashboard.completedPaymentsDateLabel}.`}
+        surface="white"
+        actions={
+          <form action="/owner" className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            {plateQuery ? (
+              <input type="hidden" name="plate" value={plateQuery} />
+            ) : null}
+            <label htmlFor="completed-date" className="sr-only">
+              Filter completed payments by date
+            </label>
+            <input
+              id="completed-date"
+              type="date"
+              name="completed_date"
+              defaultValue={dashboard.completedPaymentsDateKey}
+              className="rounded-2xl border border-line bg-white px-4 py-2.5 text-sm text-foreground outline-none focus:border-accent"
+            />
+            <button
+              type="submit"
+              className="rounded-2xl bg-foreground px-4 py-2.5 text-sm font-semibold text-white hover:bg-foreground/90"
+            >
+              Apply Date
+            </button>
+          </form>
+        }
       >
         <div className="mb-5">
           <PlateSearchForm
             action="/owner"
             defaultValue={plateQuery}
+            hiddenFields={{ completed_date: dashboard.completedPaymentsDateKey }}
             summary="Search active and completed owner tables by number plate."
           />
         </div>

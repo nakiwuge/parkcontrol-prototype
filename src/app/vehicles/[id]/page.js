@@ -31,7 +31,7 @@ export default async function VehicleDetailsPage({ params, searchParams }) {
     return <SetupNotice />;
   }
 
-  const { session, site, activityLogs } = details;
+  const { session, site, activityLogs, liveCharge } = details;
   const activeRateAmount = getEffectiveRateAmount({
     rateType: session.rate_type,
     hourlyRate: site.hourly_rate,
@@ -60,8 +60,10 @@ export default async function VehicleDetailsPage({ params, searchParams }) {
       tone: "muted",
     },
     {
-      label: "Amount due",
-      value: formatCurrencyUGX(session.amount_due),
+      label: "Current total",
+      value: formatCurrencyUGX(
+        session.exit_time ? session.amount_due : liveCharge.totalAmountDue,
+      ),
       tone: "accent",
     },
     {

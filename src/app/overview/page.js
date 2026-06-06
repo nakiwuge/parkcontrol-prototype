@@ -12,8 +12,8 @@ const previewCards = [
     text: "Create a manual vehicle entry, simulate a camera event, then run a checkout with accurate amount calculation.",
   },
   {
-    title: "Revenue control",
-    text: "Show paid exits, unpaid exits, lost receipt fines, and a daily revenue difference that parking owners can review quickly.",
+    title: "Payment tracking",
+    text: "Show paid exits, unpaid exits, parking charges, and daily totals that parking owners can review quickly.",
   },
   {
     title: "Owner visibility",
@@ -64,9 +64,9 @@ export default function OverviewPage() {
             </div>
             <div className="rounded-2xl bg-foreground px-5 py-6 text-white shadow-sm">
               <p className="text-sm font-medium text-white/65">Owner Dashboard</p>
-              <p className="mt-2 text-3xl font-semibold">Revenue visibility</p>
+              <p className="mt-2 text-3xl font-semibold">Payment visibility</p>
               <p className="mt-3 text-sm leading-6 text-white/75">
-                Current occupancy, suspicious activity, collected revenue, and
+                Current occupancy, suspicious activity, collected payments, and
                 printable daily reporting.
               </p>
             </div>

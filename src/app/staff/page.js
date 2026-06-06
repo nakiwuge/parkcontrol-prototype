@@ -20,6 +20,8 @@ import {
   normalizePlateQuery,
 } from "@/lib/vehicle-search";
 
+const OVERDUE_MINUTES = 7 * 60;
+
 export default async function StaffDashboardPage({ searchParams }) {
   const filters = await searchParams;
   const dashboard = await getDashboardSnapshot();
@@ -28,6 +30,12 @@ export default async function StaffDashboardPage({ searchParams }) {
     dashboard.activeSessions,
     plateQuery,
   );
+  const overdueActiveSessions = dashboard.activeSessions
+    .map((session) => ({
+      ...session,
+      currentDurationMinutes: getDurationMinutes(session.entry_time, new Date()),
+    }))
+    .filter((session) => session.currentDurationMinutes > OVERDUE_MINUTES);
   const activeEmptyMessage = getVehicleSearchEmptyMessage(
     "No active vehicles yet.",
     plateQuery,
@@ -112,80 +120,135 @@ export default async function StaffDashboardPage({ searchParams }) {
           />
         </div>
 
+        {overdueActiveSessions.length ? (
+          <div className="mb-5 rounded-[1.4rem] border border-[#c98a4a]/35 bg-[#fbf3e8] p-4 sm:p-5">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#9a5b1f]">
+                  Checkout alert
+                </p>
+                <p className="mt-2 text-base font-semibold text-foreground">
+                  {overdueActiveSessions.length === 1
+                    ? "1 car has been marked active for more than 7 hours."
+                    : `${overdueActiveSessions.length} cars have been marked active for more than 7 hours.`}
+                </p>
+                <p className="mt-2 text-sm leading-7 text-foreground/68">
+                  Review these records in case a vehicle was not checked out.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {overdueActiveSessions.slice(0, 3).map((session) => (
+                  <Link
+                    key={session.id}
+                    href={`/vehicles/${session.id}`}
+                    className="inline-flex items-center gap-2 rounded-full border border-[#d7b187] bg-white px-3 py-1.5 text-xs font-semibold text-foreground hover:border-[#9a5b1f] hover:text-[#9a5b1f]"
+                  >
+                    <span>{session.plate_number}</span>
+                    <span className="text-foreground/48">
+                      {formatDurationLabel(session.currentDurationMinutes)}
+                    </span>
+                  </Link>
+                ))}
+                {overdueActiveSessions.length > 3 ? (
+                  <span className="inline-flex items-center rounded-full border border-[#d7b187] bg-white px-3 py-1.5 text-xs font-semibold text-foreground/58">
+                    +{overdueActiveSessions.length - 3} more
+                  </span>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        ) : null}
+
         {filteredActiveSessions.length ? (
           <div className="space-y-3 lg:hidden">
-            {filteredActiveSessions.map((session) => (
-              <article
-                key={session.id}
-                className="rounded-[1.35rem] border border-line bg-surface-muted p-4"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-base font-semibold text-foreground">
-                      {session.plate_number}
-                    </p>
-                    <p className="mt-1 font-mono text-xs text-foreground/62">
-                      {session.receipt_number}
-                    </p>
-                  </div>
-                  <StatusBadge status={session.status} />
-                </div>
+            {filteredActiveSessions.map((session) => {
+              const currentDurationMinutes = getDurationMinutes(
+                session.entry_time,
+                new Date(),
+              );
+              const isOverdue = currentDurationMinutes > OVERDUE_MINUTES;
 
-                <div className="mt-4 grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-foreground/45">
-                      Entry
-                    </p>
-                    <p className="mt-1 text-sm text-foreground/72">
-                      {formatDateTime(session.entry_time)}
-                    </p>
+              return (
+                <article
+                  key={session.id}
+                  className={`rounded-[1.35rem] border p-4 ${
+                    isOverdue
+                      ? "border-accent/30 bg-[#f7f8f3]"
+                      : "border-line bg-surface-muted"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-base font-semibold text-foreground">
+                        {session.plate_number}
+                      </p>
+                      <p className="mt-1 font-mono text-xs text-foreground/62">
+                        {session.receipt_number}
+                      </p>
+                      {isOverdue ? (
+                        <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-accent">
+                          Still active after {formatDurationLabel(currentDurationMinutes)}
+                        </p>
+                      ) : null}
+                    </div>
+                    <StatusBadge status={session.status} />
                   </div>
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-foreground/45">
-                      Duration
-                    </p>
-                    <p className="mt-1 text-sm text-foreground/72">
-                      {formatDurationLabel(
-                        getDurationMinutes(session.entry_time, new Date()),
-                      )}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-foreground/45">
-                      Key
-                    </p>
-                    <p className="mt-1 text-sm text-foreground/72">
-                      {session.key_status || "Not set"}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {session.status === "needs_confirmation" ? (
+                  <div className="mt-4 grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-foreground/45">
+                        Entry
+                      </p>
+                      <p className="mt-1 text-sm text-foreground/72">
+                        {formatDateTime(session.entry_time)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-foreground/45">
+                        Duration
+                      </p>
+                      <p className="mt-1 text-sm text-foreground/72">
+                        {formatDurationLabel(currentDurationMinutes)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-foreground/45">
+                        Key
+                      </p>
+                      <p className="mt-1 text-sm text-foreground/72">
+                        {session.key_status || "Not set"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {session.status === "needs_confirmation" ? (
+                      <Link
+                        href={`/vehicles/${session.id}`}
+                        className="inline-flex flex-1 items-center justify-center rounded-2xl bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-strong"
+                      >
+                        Review &amp; Confirm
+                      </Link>
+                    ) : null}
+                    {session.status === "inside" ? (
+                      <Link
+                        href={`/vehicles/${session.id}/checkout`}
+                        className="inline-flex flex-1 items-center justify-center rounded-2xl bg-foreground px-4 py-2.5 text-sm font-semibold text-white hover:bg-foreground/90"
+                      >
+                        Checkout
+                      </Link>
+                    ) : null}
                     <Link
                       href={`/vehicles/${session.id}`}
-                      className="inline-flex flex-1 items-center justify-center rounded-2xl bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-strong"
+                      className="inline-flex items-center justify-center rounded-2xl border border-line bg-white px-4 py-2.5 text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent"
                     >
-                      Review &amp; Confirm
+                      Details
                     </Link>
-                  ) : null}
-                  {session.status === "inside" ? (
-                    <Link
-                      href={`/vehicles/${session.id}/checkout`}
-                      className="inline-flex flex-1 items-center justify-center rounded-2xl bg-foreground px-4 py-2.5 text-sm font-semibold text-white hover:bg-foreground/90"
-                    >
-                      Checkout
-                    </Link>
-                  ) : null}
-                  <Link
-                    href={`/vehicles/${session.id}`}
-                    className="inline-flex items-center justify-center rounded-2xl border border-line bg-white px-4 py-2.5 text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent"
-                  >
-                    Details
-                  </Link>
-                </div>
-              </article>
-            ))}
+                  </div>
+                </article>
+              );
+            })}
           </div>
         ) : (
           <div className="rounded-[1.25rem] border border-line bg-white px-4 py-8 text-center text-sm text-foreground/55 lg:hidden">
@@ -208,57 +271,74 @@ export default async function StaffDashboardPage({ searchParams }) {
             rowCount={filteredActiveSessions.length}
             emptyMessage={activeEmptyMessage}
           >
-            {filteredActiveSessions.map((session) => (
-              <tr key={session.id} className="align-top">
-                <td className="px-4 py-4 text-sm font-semibold text-foreground">
-                  {session.plate_number}
-                </td>
-                <td className="px-4 py-4 font-mono text-xs text-foreground/70">
-                  {session.receipt_number}
-                </td>
-                <td className="px-4 py-4 text-sm text-foreground/70">
-                  {formatDateTime(session.entry_time)}
-                </td>
-                <td className="px-4 py-4 text-sm text-foreground/70">
-                  {formatDurationLabel(getDurationMinutes(session.entry_time, new Date()))}
-                </td>
-                <td className="px-4 py-4 text-sm text-foreground/70">
-                  {session.key_status || "Not set"}
-                </td>
-                <td className="px-4 py-4 text-sm capitalize text-foreground/70">
-                  {session.source?.replace("_", " ")}
-                </td>
-                <td className="px-4 py-4">
-                  <StatusBadge status={session.status} />
-                </td>
-                <td className="px-4 py-4">
-                  <div className="flex flex-wrap gap-2">
-                    {session.status === "needs_confirmation" ? (
+            {filteredActiveSessions.map((session) => {
+              const currentDurationMinutes = getDurationMinutes(
+                session.entry_time,
+                new Date(),
+              );
+              const isOverdue = currentDurationMinutes > OVERDUE_MINUTES;
+
+              return (
+                <tr
+                  key={session.id}
+                  className={`align-top ${isOverdue ? "bg-[#f7f8f3]" : ""}`}
+                >
+                  <td className="px-4 py-4 text-sm font-semibold text-foreground">
+                  </td>
+                  <td className="px-4 py-4 font-mono text-xs text-foreground/70">
+                    {session.receipt_number}
+                  </td>
+                  <td className="px-4 py-4 text-sm text-foreground/70">
+                    {formatDateTime(session.entry_time)}
+                  </td>
+                  <td className="px-4 py-4 text-sm text-foreground/70">
+                    <div>
+                      <p>{formatDurationLabel(currentDurationMinutes)}</p>
+                      {isOverdue ? (
+                        <p className="mt-1 inline-flex whitespace-nowrap rounded-full bg-[#fbf3e8] px-2.5 py-1 text-xs font-semibold text-[#9a5b1f]">
+                          Over 7 hours
+                        </p>
+                      ) : null}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 text-sm text-foreground/70">
+                    {session.key_status || "Not set"}
+                  </td>
+                  <td className="px-4 py-4 text-sm capitalize text-foreground/70">
+                    {session.source?.replace("_", " ")}
+                  </td>
+                  <td className="px-4 py-4">
+                    <StatusBadge status={session.status} />
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="flex flex-wrap gap-2">
+                      {session.status === "needs_confirmation" ? (
+                        <Link
+                          href={`/vehicles/${session.id}`}
+                          className="rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-strong"
+                        >
+                          Review &amp; Confirm
+                        </Link>
+                      ) : null}
+                      {session.status === "inside" ? (
+                        <Link
+                          href={`/vehicles/${session.id}/checkout`}
+                          className="rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-foreground hover:border-accent/40 hover:text-accent"
+                        >
+                          Checkout
+                        </Link>
+                      ) : null}
                       <Link
                         href={`/vehicles/${session.id}`}
-                        className="rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-strong"
-                      >
-                        Review &amp; Confirm
-                      </Link>
-                    ) : null}
-                    {session.status === "inside" ? (
-                      <Link
-                        href={`/vehicles/${session.id}/checkout`}
                         className="rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-foreground hover:border-accent/40 hover:text-accent"
                       >
-                        Checkout
+                        View details
                       </Link>
-                    ) : null}
-                    <Link
-                      href={`/vehicles/${session.id}`}
-                      className="rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-foreground hover:border-accent/40 hover:text-accent"
-                    >
-                      View details
-                    </Link>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </DataTable>
         </div>
       </SectionCard>

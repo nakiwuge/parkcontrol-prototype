@@ -31,9 +31,10 @@ export default async function SettingsPage({ searchParams }) {
       <SectionCard
         title="Parking Configuration"
         subtitle="Changes here update site details and checkout pricing throughout the prototype."
+        surface="white"
       >
         <div className="mx-auto max-w-4xl">
-          <div className="rounded-[1.5rem] border border-line bg-surface-muted p-5">
+          <div className="rounded-[1.5rem] border border-line bg-white p-5 shadow-sm">
             <ParkingSettingsForm site={site} disabled={!dashboard.isConfigured} />
           </div>
         </div>

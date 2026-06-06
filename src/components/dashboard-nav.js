@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { dashboardNavItems } from "@/components/nav-items";
 
 function isActivePath(pathname, href) {
@@ -25,6 +25,7 @@ export function DashboardNav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState({});
+  const rootRef = useRef(null);
 
   useEffect(() => {
     setExpandedGroups((current) => ({
@@ -37,6 +38,28 @@ export function DashboardNav() {
     }));
   }, [pathname]);
 
+  useEffect(() => {
+    function handlePointerDown(event) {
+      if (!rootRef.current?.contains(event.target)) {
+        setOpen(false);
+      }
+    }
+
+    function handleEscape(event) {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
   function toggleGroup(label) {
     setExpandedGroups((current) => ({
       ...current,
@@ -46,7 +69,7 @@ export function DashboardNav() {
 
   return (
     <>
-      <div className="relative lg:hidden">
+      <div ref={rootRef} className="relative lg:hidden">
         <button
           type="button"
           onClick={() => setOpen((current) => !current)}
@@ -73,7 +96,7 @@ export function DashboardNav() {
         <nav
           className={`${
             open ? "mt-3 flex" : "hidden"
-          } absolute right-0 top-full z-50 min-w-64 flex-col gap-2 rounded-[1.5rem] border border-line bg-white p-3 shadow-[0_18px_45px_rgba(31,41,55,0.12)]`}
+          } absolute right-0 top-full z-50 max-h-[calc(100vh-7rem)] min-w-64 flex-col gap-2 overflow-y-auto rounded-[1.5rem] border border-line bg-white p-3 shadow-[0_18px_45px_rgba(31,41,55,0.12)]`}
         >
           {dashboardNavItems.map((item) => {
             const active = isParentActive(pathname, item);

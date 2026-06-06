@@ -59,21 +59,9 @@ export function ParkingSettingsForm({ site, disabled }) {
         />
       </FormField>
 
-      <div className="rounded-[1.4rem] border border-line bg-surface-muted p-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-foreground/45">
-          Effect of changes
-        </p>
-        <p className="mt-3 text-sm leading-7 text-foreground/68">
-          Updates apply immediately to new checkouts, staff pricing previews,
-          owner revenue totals, and the daily report.
-        </p>
-      </div>
 
       <div className="lg:col-span-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm leading-7 text-foreground/60">
-          Keep the settings simple for the live prototype. This page is the
-          control point for pricing and site identity.
-        </p>
+    
         <SubmitButton
           type="submit"
           disabled={disabled}

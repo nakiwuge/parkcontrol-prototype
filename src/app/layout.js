@@ -4,7 +4,7 @@ import { AppShell } from "@/components/app-shell";
 export const metadata = {
   title: "ParkControl ",
   description:
-    "Parking records, revenue control, and owner visibility for live demos.",
+    "Parking records, payment tracking, and owner visibility for parking business owners.",
 };
 
 export default function RootLayout({ children }) {
