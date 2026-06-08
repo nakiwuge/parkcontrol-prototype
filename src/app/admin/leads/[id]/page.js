@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AdminLeadEditModal } from "@/components/admin-lead-edit-modal";
+import { FlashMessage } from "@/components/flash-message";
 import { SectionCard } from "@/components/section-card";
 import { formatDateOnly, formatDateTime } from "@/lib/format";
 import { getWaitlistEntryDetails } from "@/lib/data";
@@ -29,9 +31,10 @@ function buildLeadDetails(entry) {
   ];
 }
 
-export default async function AdminLeadDetailsPage({ params }) {
+export default async function AdminLeadDetailsPage({ params, searchParams }) {
   await requireAdmin();
   const routeParams = await params;
+  const filters = await searchParams;
   const entry = await getWaitlistEntryDetails(routeParams.id);
 
   if (!entry) {
@@ -43,6 +46,8 @@ export default async function AdminLeadDetailsPage({ params }) {
   return (
     <main className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl space-y-6">
+        <FlashMessage message={filters?.message} error={filters?.error} />
+
         <section className="rounded-[1.9rem] border border-line bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-4">
@@ -73,6 +78,7 @@ export default async function AdminLeadDetailsPage({ params }) {
             </div>
 
             <div className="flex flex-wrap gap-3">
+              <AdminLeadEditModal entry={entry} />
               <Link
                 href="/admin"
                 className="rounded-2xl border border-line bg-surface-muted px-4 py-2 text-sm font-semibold text-foreground hover:text-accent"

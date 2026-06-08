@@ -1,9 +1,14 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireSupabaseAdminClient } from "@/lib/supabase";
 import { clearAdminSession, createAdminSession } from "@/lib/admin-auth";
 import { normalizeAdminEmail, verifyPassword } from "@/lib/password-hash";
+import {
+  buildWaitlistLeadPayload,
+  getWaitlistLeadFormValues,
+} from "@/lib/waitlist-lead";
 
 function toText(value) {
   return String(value ?? "").trim();
@@ -70,6 +75,46 @@ export async function logoutAdminAction() {
       "/admin/login",
       "message",
       "You have been signed out.",
+    ),
+  );
+}
+
+export async function updateWaitlistLeadAction(formData) {
+  const client = requireSupabaseAdminClient();
+  const leadId = toText(formData.get("lead_id"));
+  const formValues = getWaitlistLeadFormValues(formData);
+
+  if (!leadId) {
+    redirect(buildRedirect("/admin", "error", "Waitlist lead not found."));
+  }
+
+  if (!formValues.clientName) {
+    redirect(
+      buildRedirect(
+        `/admin/leads/${leadId}`,
+        "error",
+        "Client name is required.",
+      ),
+    );
+  }
+
+  const { error } = await client
+    .from("sales_waitlist")
+    .update(buildWaitlistLeadPayload(formValues))
+    .eq("id", leadId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/admin");
+  revalidatePath(`/admin/leads/${leadId}`);
+
+  redirect(
+    buildRedirect(
+      `/admin/leads/${leadId}`,
+      "message",
+      `Lead updated for ${formValues.clientName}.`,
     ),
   );
 }

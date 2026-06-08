@@ -14,6 +14,10 @@ import {
   requireSupabaseAdminClient,
   requireSupabaseServerClient,
 } from "@/lib/supabase";
+import {
+  buildWaitlistLeadPayload,
+  getWaitlistLeadFormValues,
+} from "@/lib/waitlist-lead";
 import { sendDemoSms } from "@/lib/sms";
 
 function toText(value) {
@@ -540,40 +544,16 @@ export async function sendDemoSmsAction(previousState, formData) {
 
 export async function createWaitlistLeadAction(formData) {
   const client = requireSupabaseAdminClient();
+  const formValues = getWaitlistLeadFormValues(formData);
 
-  const clientName = toText(formData.get("client_name"));
-  const businessName = toNullableText(formData.get("business_name"));
-  const contactPhone = toNullableText(formData.get("contact_phone"));
-  const contactEmail = toNullableText(formData.get("contact_email"));
-  const location = toNullableText(formData.get("location"));
-  const parkingSize = toNullableText(formData.get("parking_size"));
-  const budgetRange = toNullableText(formData.get("budget_range"));
-  const packageInterest = toNullableText(formData.get("package_interest"));
-  const decisionTimeline = toNullableText(formData.get("decision_timeline"));
-  const followUpStatus =
-    toNullableText(formData.get("follow_up_status")) || "New Lead";
-  const nextFollowUpDate = toNullableText(formData.get("next_follow_up_date"));
-  const notes = toNullableText(formData.get("notes"));
-
-  if (!clientName) {
+  if (!formValues.clientName) {
     redirect(
       buildRedirect("/waitlist", "error", "Client name is required."),
     );
   }
 
   const { error } = await client.from("sales_waitlist").insert({
-    client_name: clientName,
-    business_name: businessName,
-    contact_phone: contactPhone,
-    contact_email: contactEmail,
-    location,
-    parking_size: parkingSize,
-    budget_range: budgetRange,
-    package_interest: packageInterest,
-    decision_timeline: decisionTimeline,
-    follow_up_status: followUpStatus,
-    next_follow_up_date: nextFollowUpDate,
-    notes,
+    ...buildWaitlistLeadPayload(formValues),
     created_by: "Demo Sales",
   });
 
@@ -587,7 +567,7 @@ export async function createWaitlistLeadAction(formData) {
     buildRedirect(
       "/waitlist",
       "message",
-      `Waitlist lead saved for ${clientName}.`,
+      `Waitlist lead saved for ${formValues.clientName}.`,
     ),
   );
 }
