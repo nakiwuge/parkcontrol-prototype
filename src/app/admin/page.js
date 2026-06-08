@@ -52,8 +52,8 @@ export default async function AdminDashboardPage() {
           </form>
         </section>
 
-        <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          <MetricCard label="Total Waitlist Leads" value={totalLeads} accent="dark" />
+        <section className="grid grid-cols-2 gap-3 xl:grid-cols-3">
+          <MetricCard label="Total Leads" value={totalLeads} accent="dark" />
           <MetricCard label="New Leads" value={newLeads} accent="accent" />
           <MetricCard label="Due Follow Ups" value={dueFollowUps} accent="muted" />
         </section>
