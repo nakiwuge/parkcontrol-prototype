@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createWaitlistLeadAction } from "@/app/actions";
 import { FlashMessage } from "@/components/flash-message";
 import { FormField } from "@/components/form-field";
+import { MarketingBottomNav } from "@/components/marketing-bottom-nav";
 import { MarketingFooter } from "@/components/marketing-footer";
 import { MarketingHeader } from "@/components/marketing-header";
 import { SelectInput } from "@/components/select-input";
@@ -24,7 +25,7 @@ export default async function WaitlistPage({ searchParams }) {
   const dashboard = await getDashboardSnapshot();
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background pb-24 text-foreground sm:pb-0">
       <MarketingHeader />
 
       <main>
@@ -189,6 +190,7 @@ export default async function WaitlistPage({ searchParams }) {
       </main>
 
       <MarketingFooter />
+      <MarketingBottomNav />
     </div>
   );
 }

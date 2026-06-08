@@ -73,7 +73,7 @@ export const dashboardNavItems = [
   },
   {
     href: "/owner/completed",
-    label: "Completed Cars",
+    label: "Past Sessions",
     icon: completedCarsIcon,
   },
   {
@@ -135,3 +135,15 @@ export const dashboardNavItems = [
     ),
   },
 ];
+
+export function isStaffAreaPath(pathname) {
+  return (
+    pathname === "/staff" ||
+    pathname.startsWith("/staff/") ||
+    pathname.startsWith("/vehicles/")
+  );
+}
+
+export function getVisibleNavItems(pathname) {
+  return isStaffAreaPath(pathname) ? staffNavItems : dashboardNavItems;
+}

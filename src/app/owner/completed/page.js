@@ -20,7 +20,7 @@ export default async function AdminCompletedCarsPage({ searchParams }) {
     plateQuery,
   );
   const emptyMessage = getVehicleSearchEmptyMessage(
-    "No completed cars found for the selected day.",
+    "No past sessions found for the selected day.",
     plateQuery,
   );
 
@@ -33,7 +33,7 @@ export default async function AdminCompletedCarsPage({ searchParams }) {
           Admin Dashboard
         </p>
         <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-          Completed cars
+          Past sessions
         </h1>
         <p className="max-w-3xl text-sm leading-7 text-foreground/65">
           Review paid and unpaid completed vehicle sessions for the selected day.
@@ -43,7 +43,7 @@ export default async function AdminCompletedCarsPage({ searchParams }) {
       {!dashboard.isConfigured ? <SetupNotice /> : null}
 
       <CompletedSessionsSection
-        title="Completed Cars"
+        title="Past Sessions"
         subtitle={`Completed sessions for ${dashboard.completedPaymentsDateLabel}.`}
         actionPath="/owner/completed"
         dateInputId="admin-completed-date"
@@ -51,7 +51,7 @@ export default async function AdminCompletedCarsPage({ searchParams }) {
         plateQuery={plateQuery}
         sessions={filteredCompletedSessions}
         emptyMessage={emptyMessage}
-        searchSummary="Search completed cars by number plate."
+        searchSummary="Search past sessions by number plate."
         backHref="/owner"
         backLabel="Back to Overview"
       />

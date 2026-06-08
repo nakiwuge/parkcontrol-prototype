@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MarketingBottomNav } from "@/components/marketing-bottom-nav";
 import { MarketingFooter } from "@/components/marketing-footer";
 import { MarketingHeader } from "@/components/marketing-header";
 import { formatCurrencyUGX } from "@/lib/format";
@@ -323,15 +324,7 @@ export default function HomePage() {
       </main>
 
       <MarketingFooter />
-
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-[#f6f7f3]/96 p-3 shadow-[0_-10px_24px_rgba(31,41,55,0.08)] backdrop-blur-xl sm:hidden">
-        <Link
-          href="/waitlist"
-          className="inline-flex w-full items-center justify-center rounded-2xl bg-foreground px-5 py-3 text-sm font-semibold text-white hover:bg-[#17202c]"
-        >
-          Join Waitlist
-        </Link>
-      </div>
+      <MarketingBottomNav />
     </div>
   );
 }

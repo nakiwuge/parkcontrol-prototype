@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { APP_NAME } from "@/lib/constants";
 import { BrandLogo } from "@/components/brand-logo";
 import { DashboardNav } from "@/components/dashboard-nav";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 
 export function AppShell({ children }) {
   const pathname = usePathname();
@@ -63,9 +64,11 @@ export function AppShell({ children }) {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-7xl px-3 py-5 sm:px-6 sm:py-8 lg:px-8">
+        <main className="mx-auto w-full max-w-7xl px-3 py-5 pb-24 sm:px-6 sm:py-8 lg:px-8 lg:pb-8">
           {children}
         </main>
+
+        <MobileBottomNav />
       </div>
     </div>
   );

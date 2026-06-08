@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { dashboardNavItems, staffNavItems } from "@/components/nav-items";
+import { getVisibleNavItems } from "@/components/nav-items";
 
 function isActivePath(pathname, href) {
   if (href === "/owner") {
@@ -30,11 +30,7 @@ export function DashboardNav() {
   const [open, setOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState({});
   const rootRef = useRef(null);
-  const isStaffArea =
-    pathname === "/staff" ||
-    pathname.startsWith("/staff/") ||
-    pathname.startsWith("/vehicles/");
-  const visibleNavItems = isStaffArea ? staffNavItems : dashboardNavItems;
+  const visibleNavItems = getVisibleNavItems(pathname);
 
   useEffect(() => {
     setExpandedGroups((current) => ({
