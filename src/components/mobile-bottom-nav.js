@@ -47,7 +47,6 @@ function getMobileNavItems(pathname) {
   return [
     homeItem,
     itemMap.get("/owner"),
-    itemMap.get("/owner/staff"),
     itemMap.get("/settings"),
     itemMap.get("/owner/completed"),
     itemMap.get("/reports/daily"),

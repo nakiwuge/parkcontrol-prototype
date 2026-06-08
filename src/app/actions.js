@@ -10,7 +10,10 @@ import {
 } from "@/lib/constants";
 import { calculateCharge, buildCheckoutSmsPreview, buildEntrySmsPreview, getNextReceiptNumber } from "@/lib/parking";
 import { createActivityLog, ensureDefaultParkingSite } from "@/lib/data";
-import { requireSupabaseServerClient } from "@/lib/supabase";
+import {
+  requireSupabaseAdminClient,
+  requireSupabaseServerClient,
+} from "@/lib/supabase";
 import { sendDemoSms } from "@/lib/sms";
 
 function toText(value) {
@@ -76,9 +79,21 @@ function toNullableText(value) {
   return normalized || null;
 }
 
+function getDashboardRedirectPath(value, fallback = "/staff") {
+  const normalized = toText(value);
+  const allowedPaths = new Set(["/staff", "/owner", "/owner/staff"]);
+
+  if (allowedPaths.has(normalized)) {
+    return normalized;
+  }
+
+  return fallback;
+}
+
 export async function createVehicleEntryAction(formData) {
   const client = requireSupabaseServerClient();
   const site = await ensureDefaultParkingSite(client);
+  const redirectTo = getDashboardRedirectPath(formData.get("redirect_to"));
 
   const plateNumber = normalizePlateNumber(formData.get("plate_number"));
   const customerPhone = toText(formData.get("customer_phone"));
@@ -90,7 +105,12 @@ export async function createVehicleEntryAction(formData) {
   const plateNumberError = getPlateNumberErrorMessage(plateNumber);
 
   if (plateNumberError) {
-    redirect(buildRedirect("/staff/entry", "error", plateNumberError));
+    const searchParams = new URLSearchParams({
+      error: plateNumberError,
+      returnTo: redirectTo,
+    });
+
+    redirect(`/staff/entry?${searchParams.toString()}`);
   }
 
   const receiptNumber = await getNextReceiptNumber(client);
@@ -130,16 +150,17 @@ export async function createVehicleEntryAction(formData) {
 
   redirect(
     buildRedirect(
-      "/staff",
+      redirectTo,
       "message",
       `Vehicle entry created for ${plateNumber}.`,
     ),
   );
 }
 
-export async function simulateCameraCaptureAction() {
+export async function simulateCameraCaptureAction(formData) {
   const client = requireSupabaseServerClient();
   const site = await ensureDefaultParkingSite(client);
+  const redirectTo = getDashboardRedirectPath(formData?.get("redirect_to"));
 
   const receiptNumber = await getNextReceiptNumber(client);
   const plateNumber = normalizePlateNumber(
@@ -180,7 +201,7 @@ export async function simulateCameraCaptureAction() {
 
   redirect(
     buildRedirect(
-      "/staff",
+      redirectTo,
       "message",
       `Camera capture created for ${plateNumber}.`,
     ),
@@ -518,7 +539,7 @@ export async function sendDemoSmsAction(previousState, formData) {
 }
 
 export async function createWaitlistLeadAction(formData) {
-  const client = requireSupabaseServerClient();
+  const client = requireSupabaseAdminClient();
 
   const clientName = toText(formData.get("client_name"));
   const businessName = toNullableText(formData.get("business_name"));

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { simulateCameraCaptureAction } from "@/app/actions";
 import { CompletedSessionsSection } from "@/components/completed-sessions-section";
 import { DataTable } from "@/components/data-table";
 import { FlashMessage } from "@/components/flash-message";
@@ -103,8 +104,24 @@ export default async function OwnerDashboardPage({ searchParams }) {
         actions={
           <div className="flex flex-wrap gap-2">
             <Link
-              href="/settings"
+              href="/staff/entry?returnTo=/owner"
               className="rounded-2xl bg-foreground px-4 py-2 text-sm font-semibold text-white hover:bg-foreground/90"
+            >
+              New Vehicle Entry
+            </Link>
+            <form action={simulateCameraCaptureAction}>
+              <input type="hidden" name="redirect_to" value="/owner" />
+              <button
+                type="submit"
+                disabled={!dashboard.isConfigured}
+                className="rounded-2xl border border-line bg-white px-4 py-2 text-sm font-semibold text-foreground hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Simulate Camera Capture
+              </button>
+            </form>
+            <Link
+              href="/settings"
+              className="rounded-2xl border border-line bg-surface-muted px-4 py-2 text-sm font-semibold text-foreground hover:text-accent"
             >
               Open Settings
             </Link>

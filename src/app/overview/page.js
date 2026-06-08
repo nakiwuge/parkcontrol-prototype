@@ -17,7 +17,7 @@ const previewCards = [
   },
   {
     title: "Owner visibility",
-    text: "Surface suspicious activity, current occupancy, staff activity, and daily reports without building full authentication.",
+    text: "Surface suspicious activity, current occupancy, staff activity, daily reports, and protected admin waitlist access.",
   },
 ];
 

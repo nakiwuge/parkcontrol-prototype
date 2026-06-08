@@ -9,9 +9,12 @@ import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 
 export function AppShell({ children }) {
   const pathname = usePathname();
-  const isMarketingPage = pathname === "/" || pathname === "/waitlist";
+  const isStandalonePage =
+    pathname === "/" ||
+    pathname === "/waitlist" ||
+    pathname.startsWith("/admin");
 
-  if (isMarketingPage) {
+  if (isStandalonePage) {
     return <div className="min-h-screen bg-background">{children}</div>;
   }
 
@@ -49,7 +52,7 @@ export function AppShell({ children }) {
       <div className="min-w-0">
         <header className="print-hidden sticky top-0 z-40 border-b border-line bg-white/96 shadow-[0_8px_24px_rgba(31,41,55,0.06)] backdrop-blur-xl lg:hidden">
           <div className="mx-auto max-w-7xl px-3 py-4 sm:px-6">
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
               <div className="min-w-0">
                 <Link
                   href="/"
@@ -59,7 +62,6 @@ export function AppShell({ children }) {
                   {APP_NAME}
                 </Link>
               </div>
-              <DashboardNav />
             </div>
           </div>
         </header>

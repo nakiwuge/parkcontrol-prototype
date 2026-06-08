@@ -67,11 +67,6 @@ export const dashboardNavItems = [
     ),
   },
   {
-    href: "/owner/staff",
-    label: "Staff View",
-    icon: overviewIcon,
-  },
-  {
     href: "/owner/completed",
     label: "Past Sessions",
     icon: completedCarsIcon,

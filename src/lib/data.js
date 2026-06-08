@@ -10,7 +10,12 @@ import {
   getDurationMinutes,
 } from "@/lib/format";
 import { calculateCharge } from "@/lib/parking";
-import { getSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase";
+import {
+  getSupabaseAdminClient,
+  getSupabaseServerClient,
+  isSupabaseAdminConfigured,
+  isSupabaseConfigured,
+} from "@/lib/supabase";
 
 function sumBy(items, key) {
   return items.reduce((sum, item) => sum + (Number(item[key]) || 0), 0);
@@ -436,11 +441,11 @@ export async function getVehicleSessionDetails(id) {
 export async function getWaitlistEntries() {
   noStore();
 
-  if (!isSupabaseConfigured()) {
+  if (!isSupabaseAdminConfigured()) {
     return [];
   }
 
-  const client = getSupabaseServerClient();
+  const client = getSupabaseAdminClient();
   const { data, error } = await client
     .from("sales_waitlist")
     .select("*")
@@ -452,6 +457,27 @@ export async function getWaitlistEntries() {
   }
 
   return data ?? [];
+}
+
+export async function getWaitlistEntryDetails(id) {
+  noStore();
+
+  if (!isSupabaseAdminConfigured()) {
+    return null;
+  }
+
+  const client = getSupabaseAdminClient();
+  const { data, error } = await client
+    .from("sales_waitlist")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data ?? null;
 }
 
 export function buildSummaryRows(site, report) {
