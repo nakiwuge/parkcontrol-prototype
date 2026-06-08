@@ -37,7 +37,7 @@ export default async function StaffActivityPage({ searchParams }) {
             href="/owner"
             className="rounded-2xl border border-line bg-surface-muted px-4 py-2 text-sm font-semibold text-foreground hover:text-accent"
           >
-            Open Owner Dashboard
+            Open Admin Dashboard
           </Link>
         }
       >

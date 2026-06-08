@@ -63,7 +63,7 @@ export default function OverviewPage() {
               </p>
             </div>
             <div className="rounded-2xl bg-foreground px-5 py-6 text-white shadow-sm">
-              <p className="text-sm font-medium text-white/65">Owner Dashboard</p>
+              <p className="text-sm font-medium text-white/65">Admin Dashboard</p>
               <p className="mt-2 text-3xl font-semibold">Payment visibility</p>
               <p className="mt-3 text-sm leading-6 text-white/75">
                 Current occupancy, suspicious activity, collected payments, and

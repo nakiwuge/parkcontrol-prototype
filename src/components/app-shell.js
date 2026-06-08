@@ -8,8 +8,9 @@ import { DashboardNav } from "@/components/dashboard-nav";
 
 export function AppShell({ children }) {
   const pathname = usePathname();
+  const isMarketingPage = pathname === "/" || pathname === "/waitlist";
 
-  if (pathname === "/") {
+  if (isMarketingPage) {
     return <div className="min-h-screen bg-background">{children}</div>;
   }
 

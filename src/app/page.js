@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { BrandLogo } from "@/components/brand-logo";
-import { LandingNav } from "@/components/landing-nav";
-import { APP_NAME } from "@/lib/constants";
+import { MarketingFooter } from "@/components/marketing-footer";
+import { MarketingHeader } from "@/components/marketing-header";
 import { formatCurrencyUGX } from "@/lib/format";
 
 const packages = [
@@ -76,38 +75,7 @@ const problemCards = [
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background pb-24 text-foreground sm:pb-0">
-      <header className="sticky top-0 z-40 border-b border-line bg-[#f6f7f3]/96 shadow-[0_8px_24px_rgba(31,41,55,0.06)] backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex min-w-0 items-center gap-3">
-            <BrandLogo />
-            <div className="min-w-0">
-              <p className="truncate text-lg font-semibold tracking-tight text-foreground">
-                {APP_NAME}
-              </p>
-              <p className="hidden text-sm text-foreground/56 sm:block">
-                Parking records and payment tracking
-              </p>
-            </div>
-          </Link>
-
-          <LandingNav />
-
-          <div className="hidden items-center gap-3 sm:flex">
-            <Link
-              href="/staff"
-              className="inline-flex items-center justify-center rounded-full border border-foreground bg-foreground px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#17202c]"
-            >
-              Try It Out
-            </Link>
-            <Link
-              href="/waitlist"
-              className="inline-flex items-center justify-center rounded-full border border-line bg-white px-4 py-2.5 text-sm font-semibold text-foreground hover:border-accent hover:text-accent"
-            >
-              Join Waitlist
-            </Link>
-          </div>
-        </div>
-      </header>
+      <MarketingHeader />
 
       <main>
         <section className="border-b border-line">
@@ -126,12 +94,18 @@ export default function HomePage() {
                 </p>
               </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link
                   href="/staff"
                   className="inline-flex items-center justify-center rounded-full bg-foreground px-6 py-3 text-sm font-semibold text-white hover:bg-[#17202c]"
                 >
-                  Try It Out
+                  Staff Dashboard Demo
+                </Link>
+                <Link
+                  href="/owner"
+                  className="inline-flex items-center justify-center rounded-full border border-line bg-surface px-6 py-3 text-sm font-semibold text-foreground hover:border-accent hover:text-accent"
+                >
+                  Admin Dashboard Demo
                 </Link>
                 <Link
                   href="/waitlist"
@@ -348,13 +322,7 @@ export default function HomePage() {
 
       </main>
 
-      <footer className="border-t border-line bg-white">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-6 text-sm text-foreground/58 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-          <p className="font-medium text-foreground">{APP_NAME}</p>
-          <p>Parking records and payment tracking</p>
-          <p>A Rompact product</p>
-        </div>
-      </footer>
+      <MarketingFooter />
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-[#f6f7f3]/96 p-3 shadow-[0_-10px_24px_rgba(31,41,55,0.08)] backdrop-blur-xl sm:hidden">
         <Link

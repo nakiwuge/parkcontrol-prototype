@@ -3,9 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { dashboardNavItems } from "@/components/nav-items";
+import { dashboardNavItems, staffNavItems } from "@/components/nav-items";
 
 function isActivePath(pathname, href) {
+  if (href === "/owner") {
+    return pathname === href;
+  }
+
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -26,17 +30,22 @@ export function DashboardNav() {
   const [open, setOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState({});
   const rootRef = useRef(null);
+  const isStaffArea =
+    pathname === "/staff" ||
+    pathname.startsWith("/staff/") ||
+    pathname.startsWith("/vehicles/");
+  const visibleNavItems = isStaffArea ? staffNavItems : dashboardNavItems;
 
   useEffect(() => {
     setExpandedGroups((current) => ({
       ...current,
       ...Object.fromEntries(
-        dashboardNavItems
+        visibleNavItems
           .filter((item) => item.children?.length)
           .map((item) => [item.label, current[item.label] ?? isParentActive(pathname, item)]),
       ),
     }));
-  }, [pathname]);
+  }, [pathname, visibleNavItems]);
 
   useEffect(() => {
     function handlePointerDown(event) {
@@ -98,7 +107,7 @@ export function DashboardNav() {
             open ? "mt-3 flex" : "hidden"
           } absolute right-0 top-full z-50 max-h-[calc(100vh-7rem)] min-w-64 flex-col gap-2 overflow-y-auto rounded-[1.5rem] border border-line bg-white p-3 shadow-[0_18px_45px_rgba(31,41,55,0.12)]`}
         >
-          {dashboardNavItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const active = isParentActive(pathname, item);
 
             return (
@@ -179,7 +188,7 @@ export function DashboardNav() {
       </div>
 
       <nav className="hidden lg:flex lg:flex-col lg:gap-2">
-        {dashboardNavItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const active = isParentActive(pathname, item);
 
           return (

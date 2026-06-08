@@ -2,7 +2,7 @@ import { FlashMessage } from "@/components/flash-message";
 import { StaffOverviewContent } from "@/components/staff-overview-content";
 import { getDashboardSnapshot } from "@/lib/data";
 
-export default async function StaffDashboardPage({ searchParams }) {
+export default async function AdminStaffViewPage({ searchParams }) {
   const filters = await searchParams;
   const dashboard = await getDashboardSnapshot();
 
@@ -12,7 +12,8 @@ export default async function StaffDashboardPage({ searchParams }) {
       <StaffOverviewContent
         dashboard={dashboard}
         plateQuery={filters?.plate}
-        searchAction="/staff"
+        searchAction="/owner/staff"
+        headingLabel="Staff View"
       />
     </div>
   );

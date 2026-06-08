@@ -63,7 +63,7 @@ create table if not exists sales_waitlist (
   follow_up_status text default 'New Lead',
   next_follow_up_date date,
   notes text,
-  creat to ed_by text,
+  created_by text,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );

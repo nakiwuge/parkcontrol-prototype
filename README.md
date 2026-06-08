@@ -1,102 +1,69 @@
-# ParkControl Prototype
+# ParkControl
 
-ParkControl is a Next.js market research prototype for demonstrating parking entry, revenue control, owner visibility, suspicious activity, and daily reporting.
+ParkControl is a Next.js prototype for parking businesses that need better parking records, payment tracking, and owner visibility.
 
-It is intentionally simple:
+This project is built as a working product demo for Rompact. It shows the full parking flow from entry to checkout, owner reporting, and sales waitlist capture.
 
-- `Next.js` App Router
-- `JavaScript`, not TypeScript
-- `Tailwind CSS`
-- `Supabase` for database
-- `Vercel` ready deployment
-- no real authentication
-- no real camera, ANPR, or SMS provider integrations
+## Live prototype
 
-## Features
+- https://parkcontrol-prototype.vercel.app/
 
-- Home page with role switch between Staff and Owner
-- Staff dashboard with:
-  - cars inside
-  - entries today
-  - exits today
-  - collected today
-  - manual entry creation
-  - simulated camera capture
-  - camera confirmation
-  - active cars table
-- Vehicle checkout flow with:
-  - rounded hourly duration calculation
-  - configurable fixed-rate sessions
-  - lost receipt fine
-  - paid and unpaid exit states
-  - cash and mobile money demo methods
-- Owner dashboard with:
-  - expected revenue
-  - collected revenue
-  - unpaid amount
-  - suspicious activity
-  - staff activity
-- Demo SMS receipt preview and logging
-- Daily report with print button
+## What the prototype covers
 
-## Requirements
+- Staff vehicle entry
+- Active cars view
+- Camera capture simulation
+- Camera review and confirmation
+- Checkout with hourly or fixed pricing
+- Paid and unpaid exits
+- Current total / amount calculations
+- Owner dashboard
+- Daily report
+- Staff activity log
+- Waitlist form for sales follow-up
+- Demo SMS messaging
+- Receipt QR display on vehicle details
 
-- Node.js `20+` is recommended
-- A Supabase project
+## Stack
 
-## 1. Install dependencies
+- Next.js App Router
+- JavaScript
+- Tailwind CSS
+- Supabase
+- Vercel-ready deployment
 
-Use `yarn`:
+## Main routes
 
-```bash
-yarn dev
-```
+- `/` landing page
+- `/staff` staff dashboard
+- `/staff/entry` manual vehicle entry
+- `/owner` owner dashboard
+- `/settings` parking settings
+- `/activity` staff activity
+- `/reports/daily` daily report
+- `/waitlist` sales waitlist
+- `/vehicles/[id]` vehicle details
+- `/vehicles/[id]/checkout` checkout flow
 
-If dependencies are not installed yet:
+## Local setup
+
+### 1. Install dependencies
 
 ```bash
 yarn install
 ```
 
-## 2. Create a Supabase project
+### 2. Create environment variables
 
-Create a new project in Supabase, then open the SQL editor.
-
-## 3. Run the schema
-
-Run the SQL from:
+Create `.env.local` in the project root:
 
 ```bash
-supabase/schema.sql
-```
-
-This creates:
-
-- `parking_sites`
-- `vehicle_sessions`
-- `activity_logs`
-- the `updated_at` trigger
-- the default parking site:
-  - `Rompact Demo Parking`
-  - `Kampala`
-  - `hourly_rate = 2000`
-  - `fixed_rate = 5000`
-  - `lost_receipt_fine = 10000`
-
-If you already created the tables before this update, rerun `supabase/schema.sql` so the `fixed_rate` column is added to `parking_sites`.
-
-## 4. Add environment variables
-
-Create `.env.local` with:
-
-```bash
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
 ```
 
-## 5. Run locally
 
-Start the development server:
+### 5. Start the app
 
 ```bash
 yarn dev
@@ -104,43 +71,33 @@ yarn dev
 
 Open:
 
-```bash
-http://localhost:3000
-```
+- `http://localhost:3000`
 
-## 6. Demo flow to test
+## Demo flow
+
+### Staff flow
 
 1. Open `Staff View`
-2. Create a manual vehicle entry
-3. Confirm it appears under active cars
-4. Open vehicle details
-5. Send demo SMS if a phone number exists
-6. Open checkout
-7. Mark it as paid or unpaid exit
-8. Open `Owner Dashboard`
-9. Confirm revenue totals and suspicious activity update
-10. Use `Simulate Camera Capture`
-11. Confirm the new session appears as `Needs Staff Confirmation`
-12. Confirm the camera vehicle from the staff dashboard
-13. Open `Daily Report`
+2. Add a manual vehicle entry or simulate a camera capture
+3. Review active cars
+4. Open a vehicle record
+5. Checkout the vehicle
+6. Mark it as paid or unpaid exit
 
-## Deployment to Vercel
+### Owner flow
 
-1. Push the repo to GitHub
-2. Import the project into Vercel
-3. Add:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-4. Deploy
+1. Open `Owner Dashboard`
+2. Review active cars
+3. Review completed payments
+4. Open daily report
+5. Check settings and staff activity
 
-The app uses server actions and standard App Router pages, so it is Vercel ready without extra runtime configuration.
+### Waitlist flow
 
-## Notes
+1. Open `Join Waitlist`
+2. Save a lead with business details, package, budget, and follow-up notes
 
-- SMS sending is demo-only and logs to the server console
-- Camera capture is simulated only
-- Mobile Money is a demo payment label only
-- Supabase Storage is not required yet, but the database layer is ready to be extended later
+
 
 ## Scripts
 
@@ -149,4 +106,17 @@ yarn dev
 yarn build
 yarn start
 yarn lint
+```
+
+Note:
+
+- the build script uses `next build --webpack`
+
+## Project structure
+
+```text
+src/app                  App Router pages and loading states
+src/components           Reusable UI
+src/lib                  Data, formatting, Supabase, parking logic
+supabase/schema.sql      Database schema
 ```

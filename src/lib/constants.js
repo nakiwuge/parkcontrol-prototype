@@ -5,7 +5,7 @@ export const APP_TAGLINE =
   "Parking records, payment tracking, and owner visibility.";
 
 export const STAFF_LABEL = "Staff";
-export const OWNER_LABEL = "Owner";
+export const OWNER_LABEL = "Admin";
 
 export const APP_TIME_ZONE = "Africa/Kampala";
 

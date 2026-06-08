@@ -61,7 +61,14 @@ export function LandingNav() {
               onClick={() => setOpen(false)}
               className="inline-flex items-center justify-center rounded-2xl bg-foreground px-4 py-3 text-sm font-semibold text-white hover:bg-[#17202c]"
             >
-              Try It Out
+              Staff Dashboard
+            </Link>
+            <Link
+              href="/owner"
+              onClick={() => setOpen(false)}
+              className="inline-flex items-center justify-center rounded-2xl border border-line bg-surface px-4 py-3 text-sm font-semibold text-foreground hover:border-accent hover:text-accent"
+            >
+              Admin Dashboard
             </Link>
             <Link
               href="/waitlist"

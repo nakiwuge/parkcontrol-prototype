@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CompletedSessionsSection } from "@/components/completed-sessions-section";
 import { DataTable } from "@/components/data-table";
 import { FlashMessage } from "@/components/flash-message";
 import { MetricCard } from "@/components/metric-card";
@@ -49,7 +50,7 @@ export default async function OwnerDashboardPage({ searchParams }) {
 
       <section className="space-y-2">
         <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent">
-          Owner Dashboard
+          Admin Dashboard
         </p>
         <h1 className="text-3xl font-semibold tracking-tight text-foreground">
           Revenue visibility and parking performance
@@ -160,89 +161,17 @@ export default async function OwnerDashboardPage({ searchParams }) {
         </DataTable>
       </SectionCard>
 
-      <SectionCard
+      <CompletedSessionsSection
         title="Completed Payments"
         subtitle={`Paid and unpaid completed sessions for ${dashboard.completedPaymentsDateLabel}.`}
-        surface="white"
-        actions={
-          <form action="/owner" className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            {plateQuery ? (
-              <input type="hidden" name="plate" value={plateQuery} />
-            ) : null}
-            <label htmlFor="completed-date" className="sr-only">
-              Filter completed payments by date
-            </label>
-            <input
-              id="completed-date"
-              type="date"
-              name="completed_date"
-              defaultValue={dashboard.completedPaymentsDateKey}
-              className="rounded-2xl border border-line bg-white px-4 py-2.5 text-sm text-foreground outline-none focus:border-accent"
-            />
-            <button
-              type="submit"
-              className="rounded-2xl bg-foreground px-4 py-2.5 text-sm font-semibold text-white hover:bg-foreground/90"
-            >
-              Apply Date
-            </button>
-          </form>
-        }
-      >
-        <div className="mb-5">
-          <PlateSearchForm
-            action="/owner"
-            defaultValue={plateQuery}
-            hiddenFields={{ completed_date: dashboard.completedPaymentsDateKey }}
-            summary="Search active and completed owner tables by number plate."
-          />
-        </div>
-        <DataTable
-          columns={[
-            "Plate",
-            "Receipt",
-            "Exit Time",
-            "Status",
-            "Amount Due",
-            "Amount Paid",
-            "Payment",
-            "Action",
-          ]}
-          rowCount={filteredCompletedPayments.length}
-          emptyMessage={completedEmptyMessage}
-        >
-          {filteredCompletedPayments.map((session) => (
-            <tr key={session.id}>
-              <td className="px-4 py-4 text-sm font-semibold">{session.plate_number}</td>
-              <td className="px-4 py-4 font-mono text-xs text-foreground/70">
-                {session.receipt_number}
-              </td>
-              <td className="px-4 py-4 text-sm text-foreground/70">
-                {formatDateTime(session.exit_time)}
-              </td>
-              <td className="px-4 py-4">
-                <StatusBadge status={session.status} />
-              </td>
-              <td className="px-4 py-4 text-sm text-foreground/70">
-                {formatCurrencyUGX(session.amount_due)}
-              </td>
-              <td className="px-4 py-4 text-sm text-foreground/70">
-                {formatCurrencyUGX(session.amount_paid)}
-              </td>
-              <td className="px-4 py-4 text-sm text-foreground/70">
-                {session.payment_method || "Not set"}
-              </td>
-              <td className="px-4 py-4">
-                <Link
-                  href={`/vehicles/${session.id}`}
-                  className="rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-foreground hover:border-accent/40 hover:text-accent"
-                >
-                  View details
-                </Link>
-              </td>
-            </tr>
-          ))}
-        </DataTable>
-      </SectionCard>
+        actionPath="/owner"
+        dateInputId="owner-completed-date"
+        dateValue={dashboard.completedPaymentsDateKey}
+        plateQuery={plateQuery}
+        sessions={filteredCompletedPayments}
+        emptyMessage={completedEmptyMessage}
+        searchSummary="Search active and completed owner tables by number plate."
+      />
 
       <SectionCard
         title="Staff Activity"
